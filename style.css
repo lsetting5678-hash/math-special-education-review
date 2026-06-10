@@ -1,0 +1,1152 @@
+/* -------------------------------------------------------------
+ * 國小五年級下學期數學總複習簡報 - 設計系統 (style.css)
+ * 專為學習障礙與特殊教育需求學生設計：大字型、高對比、多色彩提示、3D與互動組件
+ * ------------------------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap');
+
+/* --- 變數宣告與主題設定 --- */
+:root {
+  /* 預設粉嫩友善主題 */
+  --bg-app: #f4f7f6;
+  --bg-slide: #ffffff;
+  --bg-sidebar: #ebf1f0;
+  --text-main: #2c3e50;
+  --text-muted: #576574;
+  --primary: #6c5ce7;
+  --primary-light: #a29bfe;
+  --secondary: #00b894;
+  --secondary-light: #55efc4;
+  --accent: #ff7675;
+  --accent-light: #ffaa9b;
+  --warning: #fdcb6e;
+  --warning-light: #ffeaa7;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px rgba(108, 92, 231, 0.15);
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  
+  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-size-multiplier: 1;
+  --line-height: 1.6;
+  --letter-spacing: 0.05em;
+
+  /* 數學計算專用顏色編碼 */
+  --math-integer: #0984e3;      /* 藍色 - 整數/時/分母/全體 */
+  --math-decimal: #d63031;      /* 紅色 - 小數/分/分子/部分 */
+  --math-unit: #e84393;         /* 粉紅 - 單位 */
+  --math-result: #20bf6b;       /* 綠色 - 結果 */
+}
+
+/* 深色模式 */
+[data-theme="dark"] {
+  --bg-app: #121214;
+  --bg-slide: #1e1e24;
+  --bg-sidebar: #272730;
+  --text-main: #f5f6fa;
+  --text-muted: #a4b0be;
+  --primary: #8c7ae6;
+  --primary-light: #a29bfe;
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* 高對比模式 (學習障礙/低視能輔助) */
+[data-theme="contrast"] {
+  --bg-app: #000000;
+  --bg-slide: #000000;
+  --bg-sidebar: #111111;
+  --text-main: #ffff00; /* 高對比黃字 */
+  --text-muted: #ffffff; /* 白字 */
+  --primary: #00ffff; /* 青色 */
+  --primary-light: #00ffff;
+  --secondary: #00ff00; /* 亮綠 */
+  --accent: #ff00ff; /* 洋紅 */
+  --warning: #ffff00;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --math-integer: #00ffff;
+  --math-decimal: #ff00ff;
+  --math-unit: #ff00ff;
+  --math-result: #00ff00;
+  --border-radius-sm: 0px;
+  --border-radius-md: 0px;
+  --border-radius-lg: 0px;
+  
+  border: 2px solid #ffff00;
+}
+
+/* --- 全域重設與基本樣式 --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: calc(var(--line-height) * var(--font-size-multiplier));
+  letter-spacing: var(--letter-spacing);
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* --- 側邊欄輔助功能選單 (Sidebar Controls) --- */
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-sidebar);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(0,0,0,0.05);
+  z-index: 100;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+[data-theme="contrast"] .sidebar {
+  border-right: 3px solid #ffff00;
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group {
+  margin-bottom: 1.5rem;
+}
+
+.control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* 按鈕與功能切換鍵 */
+.btn-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background-color: var(--bg-slide);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+[data-theme="contrast"] .btn-toggle {
+  border: 2px solid #ffff00 !important;
+  background: #000000;
+  color: #ffff00;
+}
+
+.btn-toggle:hover {
+  background-color: var(--primary-light);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-toggle.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+[data-theme="contrast"] .btn-toggle.active {
+  background-color: #ffff00;
+  color: #000000;
+}
+
+.font-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-font {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-slide);
+  color: var(--text-main);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+[data-theme="contrast"] .btn-font {
+  border: 2px solid #ffff00;
+}
+
+/* 簡報大綱導覽 */
+.nav-list {
+  list-style: none;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow-y: auto;
+  max-height: 250px;
+}
+
+.nav-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item:hover {
+  background-color: rgba(108, 92, 231, 0.1);
+  color: var(--primary);
+}
+
+.nav-item.active {
+  background-color: var(--primary);
+  color: white;
+  font-weight: bold;
+}
+
+[data-theme="contrast"] .nav-item.active {
+  background-color: #ffff00;
+  color: #000000;
+}
+
+/* --- 簡報主要容器 (Main Container) --- */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100vh;
+}
+
+.slide-deck {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  margin: 2rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--bg-slide);
+}
+
+[data-theme="contrast"] .slide-deck {
+  border: 4px solid #ffff00;
+  margin: 1rem;
+}
+
+/* 投影片單體 (Slide) */
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 3rem 4rem;
+  opacity: 0;
+  transform: translateX(100px);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0) !important;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.slide.prev {
+  transform: translateX(-100px);
+}
+
+/* 投影片標題與結構 */
+.slide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--primary-light);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+[data-theme="contrast"] .slide-header {
+  border-bottom: 3px solid #ffff00;
+}
+
+.unit-tag {
+  background-color: var(--primary-light);
+  color: white;
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+}
+
+[data-theme="contrast"] .unit-tag {
+  background-color: #ffff00;
+  color: #000000;
+  border: 1px solid #ffff00;
+}
+
+.slide-title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-read-aloud {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1.75rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-read-aloud:hover {
+  transform: scale(1.2);
+}
+
+[data-theme="contrast"] .btn-read-aloud {
+  color: #ffff00;
+}
+
+.slide-body {
+  flex: 1;
+  display: flex;
+  gap: 2rem;
+  overflow: hidden;
+}
+
+.slide-content-left {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide-content-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0,0,0,0.02);
+  border-radius: var(--border-radius-md);
+  border: 1px dashed rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="contrast"] .slide-content-right {
+  border: 2px dashed #ffff00;
+  background-color: #000;
+}
+
+/* 文字樣式 */
+.scaffold-text {
+  font-size: 1.35rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.scaffold-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  background-color: rgba(108, 92, 231, 0.05);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  border-left: 5px solid var(--primary);
+}
+
+[data-theme="contrast"] .scaffold-step {
+  border: 2px solid #ffff00;
+  border-left: 8px solid #ffff00;
+  background: #000000;
+}
+
+.step-number {
+  background-color: var(--primary);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+[data-theme="contrast"] .step-number {
+  background-color: #ffff00;
+  color: #000000;
+}
+
+/* 顏色編碼標示 */
+.color-integer { color: var(--math-integer); font-weight: 700; }
+.color-decimal { color: var(--math-decimal); font-weight: 700; }
+.color-unit { color: var(--math-unit); font-weight: 700; }
+.color-result { color: var(--math-result); font-weight: 700; }
+
+/* --- 底部導覽控制列 (Footer Controls) --- */
+.footer-controls {
+  height: 80px;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-sidebar);
+  border-top: 1px solid rgba(0,0,0,0.05);
+  z-index: 50;
+}
+
+[data-theme="contrast"] .footer-controls {
+  border-top: 3px solid #ffff00;
+}
+
+.btn-nav {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0,0,0,0.1);
+  background: var(--bg-slide);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-nav:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+[data-theme="contrast"] .btn-nav {
+  border: 2px solid #ffff00;
+  background-color: #000000;
+  color: #ffff00;
+}
+
+[data-theme="contrast"] .btn-nav:hover {
+  background-color: #ffff00;
+  color: #000000;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dot.active {
+  background-color: var(--primary);
+  transform: scale(1.3);
+}
+
+[data-theme="contrast"] .dot {
+  background-color: #555555;
+}
+
+[data-theme="contrast"] .dot.active {
+  background-color: #ffff00;
+}
+
+/* --- 互動元件樣式 (Slide Widgets) --- */
+
+/* 1. 小數除法直式與卡片 */
+.fraction-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.fraction-card {
+  background-color: var(--bg-slide);
+  border: 2px solid rgba(108, 92, 231, 0.15);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fraction-card:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="contrast"] .fraction-card {
+  border: 2px solid #ffff00;
+  background: #000;
+}
+
+.fraction-math {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.decimal-math {
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+[data-theme="contrast"] .decimal-math {
+  color: #ffff00;
+}
+
+/* 除法直式模擬 */
+.division-vertical {
+  font-family: monospace;
+  font-size: 1.75rem;
+  line-height: 1.4;
+  position: relative;
+  display: inline-block;
+  padding: 1rem;
+  background: var(--bg-slide);
+  border-radius: var(--border-radius-sm);
+}
+
+[data-theme="contrast"] .division-vertical {
+  background: #000;
+  color: #ffff00;
+}
+
+.division-line {
+  border-top: 3px solid var(--text-main);
+  margin-top: 2px;
+}
+
+[data-theme="contrast"] .division-line {
+  border-top: 3px solid #ffff00;
+}
+
+/* 2. 3D 長方體表面積展開 */
+.prism-container {
+  perspective: 800px;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prism-3d {
+  width: 120px;
+  height: 160px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s ease;
+  transform: rotateX(-20deg) rotateY(35deg);
+}
+
+.prism-face {
+  position: absolute;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  opacity: 0.85;
+  transition: all 1s ease;
+  backface-visibility: visible;
+}
+
+[data-theme="contrast"] .prism-face {
+  border: 2px solid #ffff00;
+  color: #ffff00;
+  opacity: 1;
+}
+
+/* 表面積顏色對應 */
+.face-top, .face-bottom { background-color: var(--math-integer); } /* 藍 */
+.face-front, .face-back { background-color: var(--math-decimal); } /* 紅 */
+.face-left, .face-right { background-color: var(--math-unit); }     /* 粉 */
+
+/* 立體定位 */
+.face-front  { width: 120px; height: 160px; transform: translateZ(40px); }
+.face-back   { width: 120px; height: 160px; transform: rotateY(180deg) translateZ(40px); }
+.face-left   { width: 80px;  height: 160px; transform: rotateY(-90deg) translateZ(60px); left: 20px; }
+.face-right  { width: 80px;  height: 160px; transform: rotateY(90deg) translateZ(60px); left: 20px; }
+.face-top    { width: 120px; height: 80px;  transform: rotateX(90deg) translateZ(40px); top: 40px; }
+.face-bottom { width: 120px; height: 80px;  transform: rotateX(-90deg) translateZ(120px); top: 40px; }
+
+/* 展開狀態樣式 */
+.prism-3d.unfolded {
+  transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+}
+
+.prism-3d.unfolded .face-front { transform: translateZ(0); }
+.prism-3d.unfolded .face-back { transform: translateY(-160px) rotateY(0); }
+.prism-3d.unfolded .face-left { transform: translateX(-80px) rotateY(0); left: 0px; }
+.prism-3d.unfolded .face-right { transform: translateX(120px) rotateY(0); left: 0px; }
+.prism-3d.unfolded .face-top { transform: translateY(160px) rotateX(0); top: 0px; }
+.prism-3d.unfolded .face-bottom { transform: translateY(240px) rotateX(0); top: 0px; }
+
+/* 3. 百分率與百格圖 */
+.grid-100 {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  width: 220px;
+  height: 220px;
+  background-color: #ddd;
+  padding: 2px;
+  border-radius: var(--border-radius-sm);
+}
+
+[data-theme="contrast"] .grid-100 {
+  background-color: #333;
+  border: 2px solid #ffff00;
+}
+
+.grid-cell {
+  background-color: white;
+  transition: background-color 0.1s;
+}
+
+.grid-cell.active {
+  background-color: var(--primary);
+}
+
+[data-theme="contrast"] .grid-cell.active {
+  background-color: #ffff00;
+}
+
+.percentage-interactive {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.percentage-slider {
+  width: 80%;
+  -webkit-appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  background: #dcdde1;
+  outline: none;
+}
+
+.percentage-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="contrast"] .percentage-slider {
+  background: #333;
+  border: 2px solid #ffff00;
+}
+
+[data-theme="contrast"] .percentage-slider::-webkit-slider-thumb {
+  background: #ffff00;
+  border: 2px solid #000;
+}
+
+.percentage-display-box {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+/* 百分率位值移動對齊直觀版 */
+.shift-board {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-top: 1rem;
+}
+
+.shift-dot {
+  color: var(--math-decimal);
+  transition: transform 0.5s ease;
+  position: relative;
+}
+
+/* 4. 時間進退位盤 */
+.time-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.time-row {
+  display: flex;
+  gap: 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  align-items: center;
+}
+
+.time-box {
+  border: 2px solid rgba(0,0,0,0.1);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-slide);
+  min-width: 80px;
+  text-align: center;
+}
+
+[data-theme="contrast"] .time-box {
+  border: 2px solid #ffff00;
+  background: #000;
+  color: #ffff00;
+}
+
+/* 5. 大單位天平與鏡像對稱 */
+.scale-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.scale-balance {
+  width: 100%;
+  height: 120px;
+  border-bottom: 6px solid var(--text-main);
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+
+[data-theme="contrast"] .scale-balance {
+  border-bottom: 6px solid #ffff00;
+}
+
+.scale-pan {
+  width: 100px;
+  height: 15px;
+  background-color: var(--primary);
+  position: relative;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scale-pan::after {
+  content: '';
+  position: absolute;
+  bottom: 15px;
+  width: 2px;
+  height: 60px;
+  background-color: var(--text-muted);
+}
+
+.scale-weight {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  background: var(--warning-light);
+  padding: 0.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--warning);
+}
+
+/* 對稱網格畫布 */
+.symmetry-grid-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.symmetry-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  width: 240px;
+  height: 240px;
+  background-color: #ddd;
+  border: 3px solid var(--text-main);
+  position: relative;
+}
+
+[data-theme="contrast"] .symmetry-grid {
+  background-color: #333;
+  border: 3px solid #ffff00;
+}
+
+.symmetry-axis {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background-color: var(--accent);
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.symmetry-cell {
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.symmetry-cell.active-left {
+  background-color: var(--primary);
+}
+
+.symmetry-cell.active-right {
+  background-color: var(--secondary);
+}
+
+[data-theme="contrast"] .symmetry-cell.active-left {
+  background-color: #ffff00;
+}
+
+[data-theme="contrast"] .symmetry-cell.active-right {
+  background-color: #00ff00;
+}
+
+/* 6. 小測驗樣式 */
+.quiz-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.quiz-question {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  background: rgba(108, 92, 231, 0.05);
+  padding: 1.25rem;
+  border-radius: var(--border-radius-sm);
+  border-left: 6px solid var(--primary);
+}
+
+[data-theme="contrast"] .quiz-question {
+  border: 2px solid #ffff00;
+  border-left: 8px solid #ffff00;
+  background: #000;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.quiz-opt {
+  padding: 1.25rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  background-color: var(--bg-slide);
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.quiz-opt:hover {
+  border-color: var(--primary);
+  background-color: rgba(108, 92, 231, 0.05);
+  transform: translateY(-2px);
+}
+
+[data-theme="contrast"] .quiz-opt {
+  border: 2px solid #ffff00;
+  background: #000;
+  color: #ffff00;
+}
+
+[data-theme="contrast"] .quiz-opt:hover {
+  background: #ffff00;
+  color: #000;
+}
+
+.quiz-opt.correct {
+  background-color: var(--secondary-light) !important;
+  border-color: var(--secondary) !important;
+  color: white !important;
+}
+
+.quiz-opt.wrong {
+  background-color: var(--accent-light) !important;
+  border-color: var(--accent) !important;
+  color: white !important;
+}
+
+/* 獎勵畫布疊加 */
+#reward-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* 響應式佈局與小螢幕支援，防止畫面元件被切到 */
+@media (max-width: 1024px) {
+  body {
+    flex-direction: column;
+    overflow-y: auto;
+    height: auto;
+  }
+  
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    padding: 1.5rem 2rem;
+  }
+  
+  [data-theme="contrast"] .sidebar {
+    border-right: none;
+    border-bottom: 3px solid #ffff00;
+  }
+  
+  .main-content {
+    height: auto;
+    flex: none;
+  }
+  
+  .slide-deck {
+    margin: 1.5rem 1rem;
+    height: 680px; /* 固定投影片高度以維持動畫效果 */
+  }
+  
+  .slide {
+    padding: 2rem 3rem;
+  }
+  
+  .slide-body {
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+  }
+  
+  .slide-content-left, .slide-content-right {
+    flex: none;
+    width: 100%;
+  }
+  
+  .slide-content-right {
+    min-height: 280px;
+    padding: 1rem;
+  }
+  
+  .quiz-options {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .nav-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-height: none;
+  }
+  
+  .nav-item {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .slide-deck {
+    height: 850px;
+  }
+  .slide {
+    padding: 1.5rem 1.5rem;
+  }
+  .slide-title {
+    font-size: 1.6rem;
+  }
+  .scaffold-text {
+    font-size: 1.1rem;
+  }
+}
+
+/* 單位化聚資訊圖表檢視器樣式 */
+.infographic-viewer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 0.75rem;
+}
+
+.infographic-tabs {
+  display: flex;
+  gap: 0.35rem;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.infographic-tab-btn {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--bg-slide);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.infographic-tab-btn:hover {
+  background-color: var(--primary-light);
+  color: white;
+}
+
+.infographic-tab-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+[data-theme="contrast"] .infographic-tab-btn {
+  border: 2px solid #ffff00;
+  background: #000;
+  color: #ffff00;
+}
+
+[data-theme="contrast"] .infographic-tab-btn.active {
+  background: #ffff00;
+  color: #000;
+}
+
+.infographic-img-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.5rem;
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+}
+
+[data-theme="contrast"] .infographic-img-container {
+  border: 2px solid #ffff00;
+  background-color: #000;
+}
+
+.infographic-img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  transition: transform 0.3s;
+}
+
+.infographic-caption {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+[data-theme="contrast"] .infographic-caption {
+  color: #ffff00;
+}
+
+.btn-infographic-action {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-infographic-action:hover {
+  background-color: var(--primary);
+}

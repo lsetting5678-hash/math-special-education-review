@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國小五年級下學期數學總複習 - 互動式簡報 (學習障礙專用)</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="專為學習障礙、讀寫困難與特教學生設計的國小五年級下學期數學複習簡報。具備語音朗讀、顏色編碼、步驟拆解、3D表面積展開與百分比互動元件。">
+  <meta name="keywords" content="特教數學, 學習障礙, 五年級數學, 表面積, 百分率, 簡報, 互動教材">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti for Reward Effects -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <!-- 側邊欄輔助功能選單 -->
+  <aside class="sidebar" id="sidebarNav">
+    <div>
+      <div class="sidebar-title">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>五下數學總複習</span>
+      </div>
+      
+      <!-- 輔助功能控制組 -->
+      <div class="control-group">
+        <span class="control-label">輔助學習工具</span>
+        <button class="btn-toggle active" id="btnTts">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>語音朗讀題目</span>
+        </button>
+        <button class="btn-toggle" id="btnContrast">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+          <span>高對比模式</span>
+        </button>
+        <button class="btn-toggle" id="btnDarkMode">
+          <i class="fa-solid fa-moon"></i>
+          <span>深色模式</span>
+        </button>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">字型大小</span>
+        <div class="font-controls">
+          <button class="btn-font" id="btnFontDec" title="字型縮小">A-</button>
+          <button class="btn-font" id="btnFontReset" title="還原大小">中</button>
+          <button class="btn-font" id="btnFontInc" title="字型放大">A+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 投影片單元導覽 -->
+    <div>
+      <span class="control-label">複習大綱目錄</span>
+      <ul class="nav-list" id="navList">
+        <!-- JS 動態生成 -->
+      </ul>
+    </div>
+  </aside>
+
+  <!-- 簡報播放主區塊 -->
+  <main class="main-content">
+    <div class="slide-deck" id="slideDeck">
+      
+      <!-- 投影片 0：歡迎畫面 -->
+      <section class="slide active" id="slide-0" data-nav-title="0. 歡迎頁面">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <i class="fa-solid fa-star" style="color: var(--warning);"></i>
+            五年級下學期數學複營
+          </h2>
+          <span class="unit-tag">START</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p style="font-size: 1.6rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--primary);">哈囉！歡迎來到五年級數學複習營！</p>
+              <p>這裡有有趣的圖形、好玩的滑桿，還有會唱歌的星星喔！</p>
+              <p style="margin-top: 1rem;">在開始之前，你可以點擊左邊的喇叭，讓電腦**唸題目**給你聽！</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number"><i class="fa-solid fa-play"></i></div>
+              <p style="font-size: 1.2rem; font-weight: bold;">點擊下方的「下一頁」或鍵盤的「右方向鍵」開始吧！</p>
+            </div>
+          </div>
+          <div class="slide-content-right" style="background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));">
+            <i class="fa-solid fa-calculator" style="font-size: 8rem; color: white; opacity: 0.9; animation: bounce 2s infinite;"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 1：單元六複習 - 小數的除法 -->
+      <section class="slide" id="slide-1" data-nav-title="1. 單元六複習" data-unit="6">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>整數、小數除以整數</span>
+            <button class="btn-read-aloud" onclick="speakText('單元六：整數與小數除以整數。計算技巧：除到個位後，點上小數點，後面可以無限補零，直到除盡為止。')">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">單元 6</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p>當我們算除法除不盡的時候，記得：<b class="color-decimal">「小數點後面有無限多個0」</b>。</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number">1</div>
+              <p><b>除到個位</b>之後，在商的位置點上<b class="color-decimal">小數點</b>，商與被除數的小數點要<b>上下對齊</b>！</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number">2</div>
+              <p>在被除數的後面<b>補上 0</b>，繼續往下除，直到<b>除盡（餘數為0）</b>為止。</p>
+            </div>
+            <!-- 常用分數與小數卡片 -->
+            <div style="margin-top: 1rem; font-weight: bold;">常用的分數和小數對應（點擊卡片看提示）：</div>
+            <div class="fraction-grid">
+              <div class="fraction-card" onclick="speakText('二分之一等於零點五')">
+                <div class="fraction-math">1/2</div>
+                <div class="decimal-math">= 0.5</div>
+              </div>
+              <div class="fraction-card" onclick="speakText('四分之一等於零點二五')">
+                <div class="fraction-math">1/4</div>
+                <div class="decimal-math">= 0.25</div>
+              </div>
+              <div class="fraction-card" onclick="speakText('四分之三等於零點七五')">
+                <div class="fraction-math">3/4</div>
+                <div class="decimal-math">= 0.75</div>
+              </div>
+              <div class="fraction-card" onclick="speakText('八分之一等於零點一二五')">
+                <div class="fraction-math">1/8</div>
+                <div class="decimal-math">= 0.125</div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-content-right">
+            <!-- 互動式除法直式步驟展示 -->
+            <div class="division-interactive" style="text-align: center;">
+              <h4 style="margin-bottom: 1rem;">範例：<span class="color-integer">15</span> ÷ <span class="color-integer">40</span> = ?</h4>
+              <div class="division-vertical" id="divisionVertical">
+                <div style="text-align: right; letter-spacing: 0.3em;">
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span id="div-step-q" class="color-decimal" style="visibility: hidden;">0.375</span></div>
+                  <div class="division-line" style="width: 100%;"></div>
+                  <div>40 ) <span class="color-integer">15</span><span id="div-step-z1" class="color-decimal" style="visibility: hidden;">.000</span></div>
+                  <div id="div-sub-1" style="visibility: hidden;" class="color-muted">12 0&nbsp;&nbsp;&nbsp;</div>
+                  <div id="div-line-1" class="division-line" style="width: 80%; margin-left: auto; visibility: hidden;"></div>
+                  <div id="div-rem-1" style="visibility: hidden;">&nbsp;&nbsp;3 00&nbsp;&nbsp;</div>
+                  <div id="div-sub-2" style="visibility: hidden;" class="color-muted">&nbsp;&nbsp;2 80&nbsp;&nbsp;</div>
+                  <div id="div-line-2" class="division-line" style="width: 60%; margin-left: auto; visibility: hidden;"></div>
+                  <div id="div-rem-2" style="visibility: hidden;">&nbsp;&nbsp;&nbsp;&nbsp;200</div>
+                  <div id="div-sub-3" style="visibility: hidden;" class="color-muted">&nbsp;&nbsp;&nbsp;&nbsp;200</div>
+                  <div id="div-line-3" class="division-line" style="width: 40%; margin-left: auto; visibility: hidden;"></div>
+                  <div id="div-rem-3" style="visibility: hidden;" class="color-result">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0</div>
+                </div>
+              </div>
+              <div style="margin-top: 1rem;">
+                <button class="btn-toggle" id="btnNextDivStep" style="margin: 0 auto;">看解題下一步</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 2：單元六隨堂測驗 -->
+      <section class="slide" id="slide-2" data-nav-title="2. 單元六小測試" data-quiz-unit="6">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>單元六隨堂測驗</span>
+            <button class="btn-read-aloud" id="btnQuizRead-6">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">測驗 6</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left" style="flex: 2;">
+            <div class="quiz-container">
+              <div class="quiz-question" id="quizQuestion-6">讀取問題中...</div>
+              <div class="quiz-options" id="quizOptions-6"></div>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex: 0.8; flex-direction: column; justify-content: center; gap: 1rem;">
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">作答進度</div>
+            <div style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--primary);" id="quizProgress-6">第 1 / 5 題</div>
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">你的得分</div>
+            <div style="font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center;" id="quizScore-6">0</div>
+            <div style="display: flex; gap: 0.25rem; justify-content: center; font-size: 1.5rem; color: var(--warning);" id="quizStars-6"></div>
+            <div id="quizFeedback-6" style="text-align: center; font-size: 1rem; font-weight: bold; min-height: 2.5em; color: var(--secondary);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 3：單元七複習 - 表面積 -->
+      <section class="slide" id="slide-3" data-nav-title="3. 單元七複習" data-unit="7">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>立體圖形表面積</span>
+            <button class="btn-read-aloud" onclick="speakText('單元七：長方體與正方體的表面積。表面積就是立體圖形外面所有面面積的總和。正方體邊長乘以邊長乘以六；長方體是長乘以寬，加上寬乘以高，加上長乘以高，所得總和乘以二。')">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">單元 7</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p>表面積，就是立體圖形<b>外面所有面</b>的面積加起來！</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number" style="background-color: var(--math-integer);">正方</div>
+              <p>正方體有 6 個大小相同的面：<br>
+                 <span class="color-integer">邊長 × 邊長 × 6</span></p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number" style="background-color: var(--math-decimal);">長方</div>
+              <p>長方體有 3 組互相對稱的面：<br>
+                 <span class="color-decimal">(長×寬 + 寬×高 + 長×高) × 2</span></p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number" style="background-color: var(--math-unit);">切割</div>
+              <p>木塊從中間鋸一刀，會<b>增加 2 個側面</b>的面積喔！</p>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex-direction: column; gap: 1rem;">
+            <div class="prism-container">
+              <div class="prism-3d" id="cube3D">
+                <div class="prism-face face-front">前</div>
+                <div class="prism-face face-back">後</div>
+                <div class="prism-face face-left">左</div>
+                <div class="prism-face face-right">右</div>
+                <div class="prism-face face-top">上</div>
+                <div class="prism-face face-bottom">下</div>
+              </div>
+            </div>
+            <button class="btn-toggle" id="btnUnfoldPrism" style="margin-top: 1rem;">
+              <i class="fa-solid fa-expand"></i>
+              <span>點我展開圖形！</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 4：單元七隨堂測驗 -->
+      <section class="slide" id="slide-4" data-nav-title="4. 單元七小測試" data-quiz-unit="7">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>單元七隨堂測驗</span>
+            <button class="btn-read-aloud" id="btnQuizRead-7">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">測驗 7</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left" style="flex: 2;">
+            <div class="quiz-container">
+              <div class="quiz-question" id="quizQuestion-7">讀取問題中...</div>
+              <div class="quiz-options" id="quizOptions-7"></div>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex: 0.8; flex-direction: column; justify-content: center; gap: 1rem;">
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">作答進度</div>
+            <div style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--primary);" id="quizProgress-7">第 1 / 5 題</div>
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">你的得分</div>
+            <div style="font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center;" id="quizScore-7">0</div>
+            <div style="display: flex; gap: 0.25rem; justify-content: center; font-size: 1.5rem; color: var(--warning);" id="quizStars-7"></div>
+            <div id="quizFeedback-7" style="text-align: center; font-size: 1rem; font-weight: bold; min-height: 2.5em; color: var(--secondary);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 5：單元八複習 - 比率與百分率 -->
+      <section class="slide" id="slide-5" data-nav-title="5. 單元八複習" data-unit="8">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>比率與百分率</span>
+            <button class="btn-read-aloud" onclick="speakText('單元八：比率與百分率。比率代表部分占全體的多少。小數換百分率為乘以一百，百分率換小數為除以一百。打折是指售價為定價的百分之幾；幾百分比奧夫是指減去定價的百分之幾。')">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">單元 8</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p>比率是<b>部分占全體</b>的多少。整體代表 100%。</p>
+            </div>
+            <!-- 位值移動法 -->
+            <div class="scaffold-step">
+              <div class="step-number"><i class="fa-solid fa-arrows-left-right"></i></div>
+              <div>
+                <p><b>互換公式與技巧：</b></p>
+                <ul style="margin-left: 1rem; font-size: 1.05rem; line-height: 1.5;">
+                  <li><b>小數 ➔ 百分率</b>：小數 <b class="color-result">× 100</b> (小數點向<b>右</b>移 2 位)</li>
+                  <li><b>百分率 ➔ 小數</b>：百分率 <b class="color-result">÷ 100</b> (小數點向<b>左</b>移 2 位)</li>
+                  <li><b>折扣</b>：「打八五折」代表付 85%；「30% off」代表少付 30%，也就是付 70%。</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- 位值平移看板 -->
+            <div class="shift-board" id="shiftBoard">
+              <span id="shift-n1">0</span>
+              <span class="shift-dot" id="shiftDot">.</span>
+              <span id="shift-n2">7</span>
+              <span id="shift-n3">8</span>
+              <span id="shift-percent" style="opacity: 0; font-size: 1.8rem; color: var(--primary);">%</span>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem;">
+              <button class="btn-toggle" id="btnToggleShift" style="margin: 0 auto; display: inline-flex;">轉換：0.78 ⇄ 78%</button>
+            </div>
+          </div>
+          <div class="slide-content-right">
+            <!-- 百格圖與滑桿互動 -->
+            <div class="percentage-interactive">
+              <h4>拖動滑桿看格數與百分率：</h4>
+              <div class="grid-100" id="grid100"></div>
+              <input type="range" class="percentage-slider" id="pctSlider" min="0" max="100" value="45">
+              <div class="percentage-display-box">
+                <div>格數：<span class="color-decimal" id="lblGridCount">45</span>/100</div>
+                <div>百分率：<span class="color-result" id="lblPercentage">45%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 6：單元八隨堂測驗 -->
+      <section class="slide" id="slide-6" data-nav-title="6. 單元八小測試" data-quiz-unit="8">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>單元八隨堂測驗</span>
+            <button class="btn-read-aloud" id="btnQuizRead-8">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">測驗 8</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left" style="flex: 2;">
+            <div class="quiz-container">
+              <div class="quiz-question" id="quizQuestion-8">讀取問題中...</div>
+              <div class="quiz-options" id="quizOptions-8"></div>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex: 0.8; flex-direction: column; justify-content: center; gap: 1rem;">
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">作答進度</div>
+            <div style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--primary);" id="quizProgress-8">第 1 / 5 題</div>
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">你的得分</div>
+            <div style="font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center;" id="quizScore-8">0</div>
+            <div style="display: flex; gap: 0.25rem; justify-content: center; font-size: 1.5rem; color: var(--warning);" id="quizStars-8"></div>
+            <div id="quizFeedback-8" style="text-align: center; font-size: 1rem; font-weight: bold; min-height: 2.5em; color: var(--secondary);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 7：單元九複習 - 時間的乘除 -->
+      <section class="slide" id="slide-7" data-nav-title="7. 單元九複習" data-unit="9">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>時間的乘法與除法</span>
+            <button class="btn-read-aloud" onclick="speakText('單元九：時間的乘除。高階單位換算，如零點二五分鐘等於十五秒；在計算時間乘除時，時與分要分開列式，分鐘算滿六十時要記得進位成一小時；除法時，剩餘的小時要乘以六十換成分鐘後再繼續除。')">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">單元 9</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p>時間計算是以<b>「60 進位制」</b>（1時=60分，1分=60秒）進行！</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number">乘</div>
+              <p><b>時與分分開計算</b>。分鐘計算完後滿 60 分鐘，往小時進位：<br>
+                 <span class="color-integer">60 分 ➔ 1 小時</span></p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number">除</div>
+              <p>除不盡的時，乘以 60 換成分鐘，加到後面繼續除：<br>
+                 <span class="color-decimal">1 小時 ➔ 60 分鐘</span></p>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex-direction: column; gap: 0.75rem; justify-content: flex-start; padding: 1rem;">
+            <!-- Tab 切換按鈕 -->
+            <div class="infographic-tabs" style="width: 100%; margin-bottom: 0.5rem;">
+              <button class="infographic-tab-btn active" id="tab-time-calc" onclick="switchTimeTab('calc')">時間計算練習</button>
+              <button class="infographic-tab-btn" id="tab-time-chart" onclick="switchTimeTab('chart')">時間化聚圖表</button>
+            </div>
+            
+            <!-- 內容一：時間計算互動盤 -->
+            <div class="time-calculator" id="timeCalculatorContainer" style="width: 100%;">
+              <h4 style="text-align: center; margin-bottom: 0.5rem;">範例：<span class="color-integer">2小時 25分</span> × <span class="color-decimal">3</span></h4>
+              
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div class="time-row">
+                  <div class="time-box">2 時</div>
+                  <div class="time-box">25 分</div>
+                  <div>× 3 = </div>
+                </div>
+                <div class="time-row" style="color: var(--text-muted); font-size: 1.2rem;">
+                  <div class="time-box" style="border-style: dotted;">6 時</div>
+                  <div class="time-box" style="border-style: dotted; color: var(--math-decimal);">75 分</div>
+                  <div style="font-size: 0.9rem;">(75分 超過60分了！)</div>
+                </div>
+                <button class="btn-toggle" id="btnTimeCarry" style="width: auto; margin: 0.5rem 0;">
+                  <i class="fa-solid fa-arrow-up-9-1"></i> 進行進位 (75 - 60)
+                </button>
+                <div class="time-row" id="timeResultRow" style="visibility: hidden;">
+                  <div class="time-box" style="background-color: var(--warning-light); border-color: var(--math-result);">7 時</div>
+                  <div class="time-box" style="background-color: var(--warning-light); border-color: var(--math-result);">15 分</div>
+                  <div class="color-result">✓ 完成！</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 內容二：時間化聚圖表 -->
+            <div class="infographic-viewer" id="timeChartContainer" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center;">
+              <div class="infographic-img-container" style="flex: 1; min-height: 180px; width: 100%;">
+                <img src="assets/time.png" alt="時間單位換算圖" class="infographic-img" id="timeInfographicImg" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                <button class="btn-infographic-action" onclick="zoomTimeInfographic()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+              </div>
+              <div class="infographic-caption" id="timeInfographicCaption">時間進率關係：日 ⇄ 時 ⇄ 分 ⇄ 秒 (進率：24, 60, 60)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 8：單元九隨堂測驗 -->
+      <section class="slide" id="slide-8" data-nav-title="8. 單元九小測試" data-quiz-unit="9">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>單元九隨堂測驗</span>
+            <button class="btn-read-aloud" id="btnQuizRead-9">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">測驗 9</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left" style="flex: 2;">
+            <div class="quiz-container">
+              <div class="quiz-question" id="quizQuestion-9">讀取問題中...</div>
+              <div class="quiz-options" id="quizOptions-9"></div>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex: 0.8; flex-direction: column; justify-content: center; gap: 1rem;">
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">作答進度</div>
+            <div style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--primary);" id="quizProgress-9">第 1 / 5 題</div>
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">你的得分</div>
+            <div style="font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center;" id="quizScore-9">0</div>
+            <div style="display: flex; gap: 0.25rem; justify-content: center; font-size: 1.5rem; color: var(--warning);" id="quizStars-9"></div>
+            <div id="quizFeedback-9" style="text-align: center; font-size: 1rem; font-weight: bold; min-height: 2.5em; color: var(--secondary);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 9：單元十複習 - 生活中的大單位與對稱 -->
+      <section class="slide" id="slide-9" data-nav-title="9. 單元十複習" data-unit="10">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>生活大單位與線對稱</span>
+            <button class="btn-read-aloud" onclick="speakText('單元十：生活中的大單位與線對稱。大單位包含長度公里、重量公噸、面積有公畝、公頃和平方公里。請使用右側的資訊圖表分頁按鈕，逐一複習各單位的化聚關係。')">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">單元 10</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left">
+            <div class="scaffold-text">
+              <p>生活中大單位的換算口訣：<b>「大換小用乘法、小換大用除法」</b>！</p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number" style="background-color: var(--primary);">面積</div>
+              <p>公畝、公頃、平方公里以 <b>100倍</b> 進位：<br>
+                 <span class="color-integer">1 平方公里 (km²) ➔ 100 公頃 (ha) ➔ 10000 公畝 (a)</span></p>
+            </div>
+            <div class="scaffold-step">
+              <div class="step-number" style="background-color: var(--math-decimal);">重量</div>
+              <p>公噸與公斤以 <b>1000倍</b> 進位：<br>
+                 <span class="color-decimal">1 公噸 (t) = 1000 公斤 (kg)</span></p>
+            </div>
+            <!-- 對稱軸網格縮小版 -->
+            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 0.5rem; text-align: center;">對稱鏡像挑戰（點選左半側，右側鏡像塗色）：</div>
+            <div class="symmetry-grid-container" style="gap: 0.5rem;">
+              <div class="symmetry-grid" id="symmetryGrid" style="width: 140px; height: 140px;">
+                <div class="symmetry-axis"></div>
+              </div>
+              <button class="btn-toggle" id="btnResetSymmetry" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem; margin: 0 auto;">清除網格</button>
+            </div>
+          </div>
+          <div class="slide-content-right">
+            <!-- 單位化聚資訊圖表檢視器 -->
+            <div class="infographic-viewer">
+              <div class="infographic-tabs">
+                <button class="infographic-tab-btn active" id="tab-area" onclick="switchInfographic('area')">面積單位</button>
+                <button class="infographic-tab-btn" id="tab-length" onclick="switchInfographic('length')">長度單位</button>
+                <button class="infographic-tab-btn" id="tab-weight" onclick="switchInfographic('weight')">重量單位</button>
+                <button class="infographic-tab-btn" id="tab-table" onclick="switchInfographic('table')">化聚總表</button>
+              </div>
+              <div class="infographic-img-container">
+                <img src="assets/area.png" alt="面積單位換算圖" class="infographic-img" id="infographicImg">
+                <button class="btn-infographic-action" onclick="zoomInfographic()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+              </div>
+              <div class="infographic-caption" id="infographicCaption">1公頃的面積和邊長100公尺的正方形面積一樣大，1公頃＝100公畝＝10000平方公尺。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 10：單元十隨堂測驗 -->
+      <section class="slide" id="slide-10" data-nav-title="10. 單元十小測試" data-quiz-unit="10">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>單元十隨堂測驗</span>
+            <button class="btn-read-aloud" id="btnQuizRead-10">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </h2>
+          <span class="unit-tag">測驗 10</span>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-left" style="flex: 2;">
+            <div class="quiz-container">
+              <div class="quiz-question" id="quizQuestion-10">讀取問題中...</div>
+              <div class="quiz-options" id="quizOptions-10"></div>
+            </div>
+          </div>
+          <div class="slide-content-right" style="flex: 0.8; flex-direction: column; justify-content: center; gap: 1rem;">
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">作答進度</div>
+            <div style="font-size: 1.8rem; font-weight: 800; text-align: center; color: var(--primary);" id="quizProgress-10">第 1 / 5 題</div>
+            <div style="font-size: 1.3rem; font-weight: 800; text-align: center;">你的得分</div>
+            <div style="font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center;" id="quizScore-10">0</div>
+            <div style="display: flex; gap: 0.25rem; justify-content: center; font-size: 1.5rem; color: var(--warning);" id="quizStars-10"></div>
+            <div id="quizFeedback-10" style="text-align: center; font-size: 1rem; font-weight: bold; min-height: 2.5em; color: var(--secondary);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投影片 11：恭喜過關 -->
+      <section class="slide" id="slide-11" data-nav-title="11. 恭喜通關">
+        <div class="slide-header">
+          <h2 class="slide-title">
+            <span>恭喜完成複習！</span>
+          </h2>
+          <span class="unit-tag">FINISH</span>
+        </div>
+        <div class="slide-body" style="text-align: center; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;">
+          <i class="fa-solid fa-trophy" style="font-size: 8rem; color: var(--warning); filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.15)); animation: bounce 1.5s infinite;"></i>
+          <div style="font-size: 2rem; font-weight: 900; color: var(--secondary);">
+            你太棒了！完成了國小五下數學 6-10 單元的總複習！
+          </div>
+          <div style="font-size: 1.4rem; max-width: 600px; line-height: 1.8;">
+            多重感官與互動練習能幫助你的大腦更好記住數學規律。繼續保持好奇心，數學其實很有趣喔！
+          </div>
+          <button class="btn-toggle" onclick="celebrateConfetti()" style="width: auto; padding: 1rem 2rem; font-size: 1.3rem;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 再放一次慶祝煙火！
+          </button>
+        </div>
+      </section>
+
+      <!-- 疊加 Canvas Confetti -->
+      <canvas id="reward-canvas"></canvas>
+    </div>
+
+    <!-- 底部控制導覽列 -->
+    <footer class="footer-controls">
+      <button class="btn-nav" id="btnPrev">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>上一頁</span>
+      </button>
+      <div class="progress-dots" id="progressDots">
+        <!-- JS 動態生成 -->
+      </div>
+      <button class="btn-nav" id="btnNext">
+        <span>下一頁</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </footer>
+  </main>
+
+  <!-- JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
