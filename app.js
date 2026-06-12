@@ -564,6 +564,16 @@ function zoomInfographic() {
   speakText(infographicZoom ? "圖表已放大，您可以更清晰地查看數字規律。" : "圖表已縮小還原。");
 }
 
+let tableInfographicZoom = false;
+function zoomTableInfographic() {
+  const tableImg = document.getElementById('tableInfographicImg');
+  if (!tableImg) return;
+  tableInfographicZoom = !tableInfographicZoom;
+  tableImg.style.transform = tableInfographicZoom ? 'scale(1.5)' : 'scale(1)';
+  speakText(tableInfographicZoom ? "圖表已放大，您可以更清晰地查看兩大家族的進率關係。" : "圖表已縮小還原。");
+}
+
+
 
 // --- 隨堂測驗資料庫 (25題，每單元5題) ---
 const quizQuestionsDb = {
