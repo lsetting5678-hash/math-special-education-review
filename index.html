@@ -549,7 +549,7 @@
                 <button class="infographic-tab-btn" id="tab-weight" onclick="switchInfographic('weight')">重量單位</button>
               </div>
               <div class="infographic-img-container">
-                <img src="assets/area.png" alt="面積單位換算圖" class="infographic-img" id="infographicImg">
+                <img src="assets/area.png" alt="面積單位換算圖" class="infographic-img" id="infographicImg" style="max-height: 100%; max-width: 100%; object-fit: contain;">
                 <button class="btn-infographic-action" onclick="zoomInfographic()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
               </div>
               <div class="infographic-caption" id="infographicCaption">1公頃的面積和邊長100公尺的正方形面積一樣大，1公頃＝100公畝＝10000平方公尺；1平方公里是邊長1公里的正方形面積，等於100公頃。</div>
@@ -569,34 +569,13 @@
           </h2>
           <span class="unit-tag">單元 10</span>
         </div>
-        <div class="slide-body">
-          <div class="slide-content-left" style="flex: 0.8;">
-            <div class="scaffold-text">
-              <p>我們將所有大單位彙總成<b>兩大家族</b>：</p>
+        <div class="slide-body" style="flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%;">
+          <div class="infographic-viewer" style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; flex: 1;">
+            <div class="infographic-img-container" style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+              <img src="assets/table.png" alt="單位化聚總表" class="infographic-img" id="tableInfographicImg" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+              <button class="btn-infographic-action" onclick="zoomTableInfographic()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
             </div>
-            <div class="scaffold-step">
-              <div class="step-number" style="background-color: var(--secondary);">1000</div>
-              <p><b>1000家族 (長度與重量)</b>：<br>
-                 公里 ⇄ 公尺，公噸 ⇄ 公斤 ⇄ 公克，相鄰的換算進率皆為 <b>1000</b>。</p>
-            </div>
-            <div class="scaffold-step">
-              <div class="step-number" style="background-color: var(--primary);">100</div>
-              <p><b>100家族 (面積單位)</b>：<br>
-                 平方公里 ⇄ 公頃 ⇄ 公畝 ⇄ 平方公尺，相鄰的換算進率皆為 <b>100</b>。</p>
-            </div>
-            <div class="scaffold-step">
-              <div class="step-number" style="background-color: var(--math-result);">口訣</div>
-              <p>面積諧音背法口訣：<br><b>「你請母吃：里、頃、畝、尺」</b></p>
-            </div>
-          </div>
-          <div class="slide-content-right" style="flex: 1.2;">
-            <div class="infographic-viewer">
-              <div class="infographic-img-container" style="height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
-                <img src="assets/table.png" alt="單位化聚總表" class="infographic-img" id="tableInfographicImg">
-                <button class="btn-infographic-action" onclick="zoomTableInfographic()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-              </div>
-              <div class="infographic-caption" id="tableInfographicCaption">單位化聚總表：平方公里、公頃、公畝、平方公尺相鄰進率皆為100；公噸與公斤進率為1000；公里與公尺進率為1000。</div>
-            </div>
+            <div class="infographic-caption" id="tableInfographicCaption">單位化聚總表：平方公里、公頃、公畝、平方公尺相鄰進率皆為100；公噸與公斤進率為1000；公里與公尺進率為1000。</div>
           </div>
         </div>
       </section>
