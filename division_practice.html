@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>除法直式計算小幫手 🧮</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons React -->
+    <script src="https://unpkg.com/lucide-react@0.292.0/dist/umd/lucide-react.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fffdf7;
+        }
+
+        /* 網格虛線框 */
+        .math-grid-cell {
+            border: 1px dashed #93c5fd; /* blue-300 */
+        }
+
+        /* 印表樣式調整 */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-page-break {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // 安全取得 Lucide 圖示，防範載入失敗
+        const icons = window.lucideReact || {};
+        const IconFallback = ({ size = 24, ...props }) => (
+            <span style={{ width: size, height: size, display: 'inline-block', backgroundColor: '#ccc', borderRadius: '50%' }} {...props} />
+        );
+        const {
+            Printer = IconFallback,
+            ChevronRight = IconFallback,
+            RefreshCw = IconFallback,
+            BookOpen = IconFallback,
+            CheckCircle = IconFallback,
+            ArrowLeft = IconFallback,
+            Play = IconFallback,
+            Settings = IconFallback,
+            Edit3 = IconFallback
+        } = icons;
+
+        // --- 核心算理：直式除法模擬器 (產生動態步驟) ---
+        function generateDivisionSteps(dividend, divisor) {
+            const dividendStr = dividend.toString();
+            const divisorStr = divisor.toString();
+            
+            const intPart = dividendStr.split('.')[0];
+            const decPart = dividendStr.split('.')[1] || "";
+            
+            const numIntCols = Math.max(1, intPart.length);
+            
+            // 計算商，限定到小數後三位
+            const quotient = dividend / divisor;
+            const quotientFixed = parseFloat(quotient.toFixed(3));
+            const qStr = quotientFixed.toString();
+            const qDecPart = qStr.split('.')[1] || "";
+            
+            const numDecCols = Math.max(decPart.length, qDecPart.length);
+            const cols = numIntCols + 1 + numDecCols; // +1 表示小數點行
+            const dotColIdx = numIntCols; // 小數點的行索引
+            
+            // 建立表頭
+            const headers = [];
+            const intLabels = ['個位', '十位', '百位', '千位'];
+            for (let i = numIntCols - 1; i >= 0; i--) {
+                headers.push({ label: intLabels[i] || '', type: 'int' });
+            }
+            headers.push({ label: '', type: 'dot' });
+            const decLabels = ['十分位', '百分位', '千分位'];
+            for (let i = 0; i < numDecCols; i++) {
+                headers.push({ label: decLabels[i] || '', type: 'dec' });
+            }
+            
+            // 被除數初始陣列
+            const d0 = Array(cols).fill(' ');
+            for (let i = 0; i < intPart.length; i++) {
+                d0[numIntCols - intPart.length + i] = intPart[i];
+            }
+            if (decPart.length > 0) {
+                d0[dotColIdx] = '.';
+                for (let i = 0; i < decPart.length; i++) {
+                    d0[dotColIdx + 1 + i] = decPart[i];
+                }
+            }
+            
+            const steps = [];
+            
+            // 步驟 0：初始狀態
+            steps.push({
+                audio: `${dividend} 除以 ${divisor}，準備開始。`,
+                q: Array(cols).fill(' '),
+                d: [...d0],
+                rows: [],
+                h_q: [],
+                h_d: [],
+                h_r: {}
+            });
+            
+            let currentQ = Array(cols).fill(' ');
+            let currentD = [...d0];
+            let currentRows = [];
+            
+            let runningRemainder = 0;
+            let hasQuotientStarted = false;
+            
+            // 遍歷每一位數（除小數點外）
+            for (let c = 0; c < cols; c++) {
+                if (c === dotColIdx) continue;
+                
+                const divDigitChar = currentD[c];
+                const divDigit = divDigitChar === ' ' ? 0 : parseInt(divDigitChar);
+                runningRemainder = runningRemainder * 10 + divDigit;
+                
+                const qDigit = Math.floor(runningRemainder / divisor);
+                const isOnesPlace = (c === dotColIdx - 1);
+                // 決定是否在此行書寫商：非零值、已經開始寫商、或者是個位(即使是0也要寫，如 0.25)
+                const shouldWrite = (qDigit > 0 || hasQuotientStarted || (isOnesPlace && qDigit === 0 && quotient < 1));
+                
+                if (shouldWrite) {
+                    if (qDigit > 0 || isOnesPlace) {
+                        hasQuotientStarted = true;
+                    }
+                    
+                    const stepQ = [...currentQ];
+                    stepQ[c] = qDigit.toString();
+                    
+                    const stepD = [...currentD];
+                    // 如果進入小數部分，補齊小數點與零
+                    if (c > dotColIdx) {
+                        stepQ[dotColIdx] = '.';
+                        stepD[dotColIdx] = '.';
+                        for (let k = dotColIdx + 1; k <= c; k++) {
+                            if (stepD[k] === ' ') {
+                                stepD[k] = '0';
+                            }
+                        }
+                    }
+                    
+                    const product = qDigit * divisor;
+                    const remainder = runningRemainder - product;
+                    
+                    // 計算乘數乘積的對齊字元
+                    const prodChars = Array(cols).fill(' ');
+                    const prodStr = product.toString();
+                    for (let i = 0; i < prodStr.length; i++) {
+                        let targetCol = c;
+                        let digitsBack = prodStr.length - 1 - i;
+                        while (digitsBack > 0) {
+                            targetCol--;
+                            if (targetCol === dotColIdx) targetCol--;
+                            digitsBack--;
+                        }
+                        prodChars[targetCol] = prodStr[i];
+                    }
+                    
+                    // 計算餘數的對齊字元
+                    const remChars = Array(cols).fill(' ');
+                    const remStr = remainder.toString();
+                    for (let i = 0; i < remStr.length; i++) {
+                        let targetCol = c;
+                        let digitsBack = remStr.length - 1 - i;
+                        while (digitsBack > 0) {
+                            targetCol--;
+                            if (targetCol === dotColIdx) targetCol--;
+                            digitsBack--;
+                        }
+                        remChars[targetCol] = remStr[i];
+                    }
+                    
+                    const newRows = [...currentRows];
+                    newRows.push({ op: '-', chars: prodChars });
+                    newRows.push({ op: '=', chars: remChars });
+                    
+                    const colLabel = headers[c].label;
+                    let audioText = "";
+                    if (c < dotColIdx) {
+                        audioText = `在${colLabel}寫商 ${qDigit}。 ${divisor} 乘以 ${qDigit} 等於 ${product}。 ${runningRemainder} 減 ${product} 餘 ${remainder}。`;
+                    } else {
+                        audioText = `十分位或百分位分法：在${colLabel}寫商 ${qDigit}。 ${divisor} 乘以 ${qDigit} 等於 ${product}。 ${runningRemainder} 減 ${product} 餘 ${remainder}。`;
+                    }
+                    
+                    steps.push({
+                        audio: audioText,
+                        q: [...stepQ],
+                        d: [...stepD],
+                        rows: [...newRows],
+                        h_q: [c],
+                        h_d: [],
+                        h_r: { [newRows.length - 1]: [c] }
+                    });
+                    
+                    runningRemainder = remainder;
+                    currentQ = [...stepQ];
+                    currentD = [...stepD];
+                    currentRows = [...newRows];
+                    
+                    // 檢查是否已整除且被除數後面沒有非空位數
+                    const hasMoreOriginalDigits = currentD.slice(c + 1).some(char => char !== ' ' && char !== '.');
+                    if (remainder === 0 && !hasMoreOriginalDigits && c >= dotColIdx - 1) {
+                        break;
+                    }
+                    
+                    // 準備拉下下一位數
+                    const nextCol = c + 1 === dotColIdx ? c + 2 : c + 1;
+                    if (nextCol < cols) {
+                        const pullD = [...currentD];
+                        if (nextCol > dotColIdx) {
+                            pullD[dotColIdx] = '.';
+                            if (pullD[nextCol] === ' ') {
+                                pullD[nextCol] = '0';
+                            }
+                        }
+                        
+                        const lastRemRow = { ...currentRows[currentRows.length - 1] };
+                        lastRemRow.chars = [...lastRemRow.chars];
+                        lastRemRow.chars[nextCol] = pullD[nextCol];
+                        lastRemRow.arrows = [nextCol];
+                        
+                        const pullRows = [...currentRows];
+                        pullRows[pullRows.length - 1] = lastRemRow;
+                        
+                        let pullAudio = "";
+                        if (nextCol === dotColIdx + 1 && dividendStr.indexOf('.') === -1) {
+                            pullAudio = `餘數 ${remainder} 不夠除。在被除數後面點上小數點，補零放下來繼續計算。`;
+                        } else {
+                            pullAudio = `將後面的數字 ${pullD[nextCol]} 放下來繼續除，得到 ${remainder}${pullD[nextCol]}。`;
+                        }
+                        
+                        steps.push({
+                            audio: pullAudio,
+                            q: [...currentQ],
+                            d: [...pullD],
+                            rows: [...pullRows],
+                            h_q: [],
+                            h_d: [nextCol],
+                            h_r: {}
+                        });
+                        
+                        currentD = [...pullD];
+                        currentRows = [...pullRows];
+                    }
+                }
+            }
+            
+            // 結束步驟
+            steps.push({
+                audio: `計算完成！商是 ${quotientFixed}，餘數為 0，順利整除。`,
+                q: [...currentQ],
+                d: [...currentD],
+                rows: [...currentRows],
+                h_q: [],
+                h_d: [],
+                h_r: {}
+            });
+            
+            return {
+                id: `dyn_${dividend}_${divisor}`,
+                dividend,
+                divisor,
+                cols,
+                headers,
+                steps
+            };
+        }
+
+        // --- 產生整除與適合教學的被除數/除數組 ---
+        function generateTerminatingProblem(type) {
+            const divisors = [2, 3, 4, 5, 8, 10, 12, 16, 20, 25, 40, 50];
+            let divisor, dividend, quotient;
+            let attempts = 0;
+            
+            while (attempts < 1000) {
+                attempts++;
+                divisor = divisors[Math.floor(Math.random() * divisors.length)];
+                
+                if (type === 'integer') {
+                    // 整數被除數，商為小數 (1 或 2 位小數)
+                    quotient = parseFloat((Math.random() * 8 + 0.1).toFixed(2));
+                    if (Math.round(quotient) === quotient) continue; // 不要整除商為整數
+                    
+                    dividend = divisor * quotient;
+                    // 被除數必須為整數且不能太大 (小於100)
+                    if (Math.round(dividend) === dividend && dividend < 100 && dividend > 1) {
+                        dividend = Math.round(dividend);
+                        return { dividend, divisor };
+                    }
+                } else {
+                    // 小數被除數 (1位小數)，商為小數
+                    quotient = parseFloat((Math.random() * 8 + 0.1).toFixed(2));
+                    dividend = parseFloat((divisor * quotient).toFixed(1));
+                    
+                    // 被除數必須包含小數且小於 100
+                    if (dividend % 1 !== 0 && dividend < 100 && dividend > 1) {
+                        // 驗證是否能整除
+                        const actualQ = dividend / divisor;
+                        if (parseFloat(actualQ.toFixed(3)) === actualQ && actualQ.toString().split('.')[1]?.length <= 3) {
+                            return { dividend, divisor };
+                        }
+                    }
+                }
+            }
+            
+            // 降級保護
+            return type === 'integer' ? { dividend: 15, divisor: 12 } : { dividend: 2.5, divisor: 2 };
+        }
+
+        // ==========================================
+        // React App 主元件
+        // ==========================================
+        function App() {
+            const [view, setView] = React.useState('menu');
+            const [problemType, setProblemType] = React.useState('integer');
+            const [useGrid, setUseGrid] = React.useState(true);
+            const [practiceTotal, setPracticeTotal] = React.useState(10);
+            const [practiceCurrent, setPracticeCurrent] = React.useState(1);
+            const [printCount, setPrintCount] = React.useState(10);
+            const [printUseGrid, setPrintUseGrid] = React.useState(true);
+            
+            const [currentProblem, setCurrentProblem] = React.useState(null);
+            const [stepIndex, setStepIndex] = React.useState(0);
+            const [worksheetData, setWorksheetData] = React.useState([]);
+            const previousViewRef = React.useRef('menu');
+            
+            // 使用者填寫答案
+            const [userValues, setUserValues] = React.useState({});
+            const inputRefs = React.useRef({});
+
+            // 語音朗讀
+            const speak = React.useCallback((text) => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-TW';
+                    utterance.rate = 0.85; 
+                    utterance.pitch = 1.1; 
+                    window.speechSynthesis.speak(utterance);
+                }
+            }, []);
+
+            const stopSpeaking = React.useCallback(() => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            }, []);
+
+            // 載入新題目
+            const loadNewProblem = (type) => {
+                let typeToUse = type || problemType;
+                if (typeToUse === 'mixed') {
+                    typeToUse = Math.random() > 0.5 ? 'integer' : 'decimal';
+                }
+                const rawProb = generateTerminatingProblem(typeToUse);
+                const stepsData = generateDivisionSteps(rawProb.dividend, rawProb.divisor);
+                
+                setCurrentProblem(stepsData);
+                setStepIndex(0);
+                setUserValues({});
+                speak(stepsData.steps[0].audio);
+            };
+
+            const startPractice = () => {
+                setPracticeCurrent(1);
+                loadNewProblem();
+                setView('practice');
+            };
+
+            const backToMenu = () => {
+                stopSpeaking();
+                setView('menu');
+            };
+
+            const handleNextStep = () => {
+                if (stepIndex < currentProblem.steps.length - 1) {
+                    setUserValues({}); 
+                    const nextIdx = stepIndex + 1;
+                    setStepIndex(nextIdx);
+                    speak(currentProblem.steps[nextIdx].audio);
+                }
+            };
+
+            const handleNextProblem = () => {
+                if (practiceCurrent < practiceTotal) {
+                    setPracticeCurrent(prev => prev + 1);
+                    loadNewProblem();
+                } else {
+                    speak("恭喜完成所有的練習！你真的很棒！");
+                    backToMenu();
+                }
+            };
+
+            // 計算當前步驟所需的預期輸入
+            const expectedInputs = React.useMemo(() => {
+                if (!currentProblem || stepIndex === 0) return {};
+                const prev = currentProblem.steps[stepIndex - 1];
+                const curr = currentProblem.steps[stepIndex];
+                const expected = {};
+
+                curr.q.forEach((c, i) => { if (c !== ' ' && prev.q[i] !== c) expected[`q-${i}`] = c; });
+                curr.d.forEach((c, i) => { if (c !== ' ' && prev.d[i] !== c) expected[`d-${i}`] = c; });
+
+                curr.rows.forEach((r, rIdx) => {
+                    const prevRow = prev.rows[rIdx];
+                    r.chars.forEach((c, i) => {
+                        if (c !== ' ' && (!prevRow || prevRow.chars[i] !== c)) {
+                            expected[`r-${rIdx}-${i}`] = c;
+                        }
+                    });
+                });
+                return expected;
+            }, [currentProblem, stepIndex]);
+
+            // 輸入順序排定，便於焦點跳轉
+            const sortedExpectedKeys = React.useMemo(() => {
+                return Object.keys(expectedInputs).sort((a, b) => {
+                    const typeA = a.split('-')[0], typeB = b.split('-')[0];
+                    const order = { 'q': 1, 'd': 2, 'r': 3 };
+                    if (order[typeA] !== order[typeB]) return order[typeA] - order[typeB];
+
+                    if (typeA === 'q' || typeA === 'd') {
+                        return parseInt(a.split('-')[1], 10) - parseInt(b.split('-')[1], 10);
+                    }
+                    if (typeA === 'r') {
+                        const partsA = a.split('-');
+                        const partsB = b.split('-');
+                        if (partsA[1] !== partsB[1]) return parseInt(partsA[1], 10) - parseInt(partsB[1], 10);
+                        return parseInt(partsA[2], 10) - parseInt(partsB[2], 10);
+                    }
+                    return 0;
+                });
+            }, [expectedInputs]);
+
+            // 自動聚焦到第一個輸入格
+            React.useEffect(() => {
+                if (sortedExpectedKeys.length > 0) {
+                    const timer = setTimeout(() => {
+                        inputRefs.current[sortedExpectedKeys[0]]?.focus();
+                    }, 50);
+                    return () => clearTimeout(timer);
+                }
+            }, [stepIndex, sortedExpectedKeys]);
+
+            const isStepInputComplete = React.useMemo(() => {
+                const keys = Object.keys(expectedInputs);
+                if (keys.length === 0) return true;
+                return keys.every(k => userValues[k] === expectedInputs[k]);
+            }, [expectedInputs, userValues]);
+
+            // 產生紙本學習單
+            const generateWorksheet = () => {
+                const data = [];
+                for (let i = 0; i < printCount; i++) {
+                    let currentType = problemType;
+                    if (currentType === 'mixed') {
+                        currentType = Math.random() > 0.5 ? 'integer' : 'decimal';
+                    }
+
+                    const rawProb = generateTerminatingProblem(currentType);
+                    const stepsData = generateDivisionSteps(rawProb.dividend, rawProb.divisor);
+                    
+                    // 計算需要的直式作答列數
+                    const lastStep = stepsData.steps[stepsData.steps.length - 1];
+                    const numRows = lastStep.rows.length;
+
+                    data.push({
+                        dividend: rawProb.dividend.toString(),
+                        divisor: rawProb.divisor,
+                        headers: stepsData.headers,
+                        numRows: numRows
+                    });
+                }
+                setWorksheetData(data);
+                previousViewRef.current = view; 
+                setView('print');
+                
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            };
+
+            React.useEffect(() => {
+                const handleAfterPrint = () => setView(previousViewRef.current);
+                window.addEventListener('afterprint', handleAfterPrint);
+                return () => window.removeEventListener('afterprint', handleAfterPrint);
+            }, []);
+
+            // ==========================================
+            // 輔助函式：渲染網格中的一個格子 (適用 CSS Grid)
+            // ==========================================
+            const renderGridCell = (char, cellKey, isHigh, hasArrow, colIdx, isDividendRow = false) => {
+                const h = currentProblem.headers[colIdx];
+                const isDot = h.type === 'dot';
+                const isExpected = expectedInputs[cellKey] !== undefined;
+                
+                const val = userValues[cellKey] || '';
+                const isCorrect = val === expectedInputs[cellKey];
+                const hasError = val !== '' && !isCorrect;
+
+                // 決定是否顯示邊框
+                const showBorder = useGrid && !isDot && (char !== ' ' || isExpected);
+
+                // 基本類別
+                const cellClass = `relative flex justify-center items-center font-mono font-bold select-none transition-all
+                    ${isDot ? 'w-4 text-orange-950 pb-1 align-baseline' : 'w-16 h-16 text-[2.2rem]'}
+                    ${showBorder ? 'math-grid-cell bg-white shadow-sm rounded-md' : 'border-transparent'}
+                    ${isHigh && !isDot ? 'bg-yellow-100 ring-2 ring-yellow-400 z-10' : ''}`;
+
+                if (isExpected) {
+                    return (
+                        <div key={cellKey} className={cellClass}>
+                            {hasArrow && (
+                                <svg className="absolute -top-[3.2rem] w-6 h-10 text-red-500 animate-bounce z-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                </svg>
+                            )}
+                            <input
+                                ref={el => inputRefs.current[cellKey] = el}
+                                type="text"
+                                maxLength={1}
+                                value={val}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const currentIndex = sortedExpectedKeys.indexOf(cellKey);
+                                        const isAllCorrect = sortedExpectedKeys.every(k => {
+                                            if (k === cellKey) return e.target.value === expectedInputs[k];
+                                            return userValues[k] === expectedInputs[k];
+                                        });
+
+                                        if (isAllCorrect) {
+                                            setTimeout(() => {
+                                                if (stepIndex < currentProblem.steps.length - 1) {
+                                                    const nextIdx = stepIndex + 1;
+                                                    setStepIndex(nextIdx);
+                                                    setUserValues({});
+                                                    speak("正確！" + currentProblem.steps[nextIdx].audio);
+                                                }
+                                            }, 100);
+                                        } else {
+                                            // 跳到下一個未填對的格子
+                                            let nextIndex = currentIndex + 1;
+                                            while (nextIndex < sortedExpectedKeys.length) {
+                                                const nextKey = sortedExpectedKeys[nextIndex];
+                                                if (userValues[nextKey] !== expectedInputs[nextKey]) {
+                                                    inputRefs.current[nextKey]?.focus();
+                                                    return;
+                                                }
+                                                nextIndex++;
+                                            }
+                                            const firstIncorrect = sortedExpectedKeys.find(k => userValues[k] !== expectedInputs[k] && k !== cellKey);
+                                            if (firstIncorrect) inputRefs.current[firstIncorrect]?.focus();
+                                        }
+                                    }
+                                }}
+                                onChange={(e) => {
+                                    let v = e.target.value.replace(/[０-九]/g, d => {
+                                        const code = d.charCodeAt(0);
+                                        return code >= 65296 && code <= 65305 ? String.fromCharCode(code - 65248) : d;
+                                    });
+                                    if (/^[0-9.]$/.test(v) || v === '') {
+                                        setUserValues(prev => ({...prev, [cellKey]: v}));
+                                        if (v !== '') {
+                                            const isCorrectValue = (v === expectedInputs[cellKey]);
+                                            if (isCorrectValue) {
+                                                const isAllCorrectNow = sortedExpectedKeys.every(k => {
+                                                    if (k === cellKey) return true;
+                                                    return userValues[k] === expectedInputs[k];
+                                                });
+
+                                                if (isAllCorrectNow) {
+                                                    setTimeout(() => {
+                                                        if (stepIndex < currentProblem.steps.length - 1) {
+                                                            const nextIdx = stepIndex + 1;
+                                                            setStepIndex(nextIdx);
+                                                            setUserValues({});
+                                                            speak("答對了！" + currentProblem.steps[nextIdx].audio);
+                                                        }
+                                                    }, 400); 
+                                                } else {
+                                                    speak("正確");
+                                                    const currentIndex = sortedExpectedKeys.indexOf(cellKey);
+                                                    if (currentIndex + 1 < sortedExpectedKeys.length) {
+                                                        setTimeout(() => inputRefs.current[sortedExpectedKeys[currentIndex + 1]]?.focus(), 10);
+                                                    }
+                                                }
+                                            } else {
+                                                speak("不對，再試一次");
+                                                setTimeout(() => {
+                                                    setUserValues(prev => ({...prev, [cellKey]: ''}));
+                                                }, 800); 
+                                            }
+                                        }
+                                    }
+                                }}
+                                className={`w-full h-full text-center focus:outline-none focus:ring-4 focus:ring-orange-400 rounded-sm font-mono text-[2.2rem]
+                                    ${isCorrect ? 'text-green-600 bg-green-50' : hasError ? 'text-red-500 bg-red-50' : 'text-blue-600 bg-blue-50 animate-pulse'}
+                                `}
+                            />
+                        </div>
+                    );
+                }
+
+                return (
+                    <div key={cellKey} className={cellClass}>
+                        {hasArrow && (
+                            <svg className="absolute -top-[3.2rem] w-6 h-10 text-red-500 animate-bounce z-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        )}
+                        {char === '.' ? '•' : char}
+                    </div>
+                );
+            };
+
+            // ==========================================
+            // 畫面 1: 列印模式 (紙本學習單)
+            // ==========================================
+            if (view === 'print') {
+                return (
+                    <div className="bg-white p-6 font-sans text-black min-h-screen">
+                        <h1 className="text-3xl font-bold text-center mb-6">
+                            除法直式計算練習單 ({problemType === 'integer' ? '整數除法' : problemType === 'decimal' ? '小數除法' : '混合模式'})
+                        </h1>
+                        <div className="flex justify-between mb-6 font-bold text-lg border-b-2 border-gray-300 pb-2">
+                            <span>姓名：_________________</span>
+                            <span>得分：_________________</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-x-12 gap-y-16 mt-6">
+                            {worksheetData.map((prob, idx) => (
+                                <div key={idx} className="flex flex-col print-page-break h-[320px] p-2">
+                                    <div className="text-xl mb-4 font-bold">({idx + 1}) &nbsp; {prob.dividend} ÷ {prob.divisor} = </div>
+                                    
+                                    <div className="flex ml-2 items-start h-full">
+                                        {/* 除數 */}
+                                        <div className="pt-[5.2rem] pr-2 text-right w-[4rem] font-bold text-2xl">{prob.divisor}</div>
+                                        
+                                        {/* CSS Grid 直式框面 */}
+                                        <div 
+                                            style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: `repeat(${prob.headers.length}, 2.5rem)`,
+                                                rowGap: '0.25rem',
+                                                alignItems: 'center'
+                                            }}
+                                            className="relative"
+                                        >
+                                            {/* 輔助標籤 */}
+                                            {printUseGrid && prob.headers.map((h, i) => (
+                                                <div key={`ph-${i}`} className={`flex justify-center items-center font-sans font-bold text-[0.7rem] border-blue-300 border-[1px] h-6
+                                                    ${h.type === 'dot' ? 'w-2 border-none bg-transparent' : 'w-10 bg-opacity-80'}
+                                                    ${h.type === 'int' ? 'bg-green-50 text-green-800' : h.type === 'dec' ? 'bg-yellow-50 text-yellow-800' : ''}
+                                                `}>
+                                                    {h.label}
+                                                </div>
+                                            ))}
+
+                                            {/* 商數行 (空框讓學生寫) */}
+                                            {prob.headers.map((h, i) => (
+                                                <div key={`pq-${i}`} className={`h-10 border-[1px] border-blue-200 bg-white
+                                                    ${h.type === 'dot' ? 'w-2 border-none bg-transparent' : 'w-10'}
+                                                `}></div>
+                                            ))}
+                                            
+                                            {/* 被除數行 (帶有除號的橫線與曲線) */}
+                                            {prob.headers.map((h, i) => {
+                                                let char = ' ';
+                                                if (h.type !== 'dot') {
+                                                    let dotIdx = prob.dividend.indexOf('.');
+                                                    if (dotIdx === -1) dotIdx = prob.dividend.length;
+                                                    
+                                                    if (h.type === 'int') {
+                                                        const ints = prob.headers.filter(x => x.type === 'int').length;
+                                                        const curIntIdx = prob.headers.filter((x, idx) => x.type === 'int' && idx <= i).length - 1;
+                                                        const shift = ints - dotIdx;
+                                                        if (curIntIdx - shift >= 0 && curIntIdx - shift < dotIdx) {
+                                                            char = prob.dividend[curIntIdx - shift];
+                                                        }
+                                                    }
+                                                    if (h.type === 'dec') {
+                                                        const curDecIdx = prob.headers.filter((x, idx) => x.type === 'dec' && idx <= i).length - 1;
+                                                        if (dotIdx !== prob.dividend.length && curDecIdx < prob.dividend.length - dotIdx - 1) {
+                                                            char = prob.dividend[dotIdx + 1 + curDecIdx];
+                                                        }
+                                                    }
+                                                }
+
+                                                // 畫除法的外邊框 (Column 0 有左側曲線邊框，全部有上橫線)
+                                                const borderClasses = `border-t-[3px] border-black ${i === 0 ? 'border-l-[3px] rounded-tl-lg' : ''}`;
+                                                return (
+                                                    <div key={`pd-${i}`} className={`flex justify-center items-center font-bold text-2xl h-10 border-blue-200 border-[1px] ${borderClasses}
+                                                        ${h.type === 'dot' ? 'w-2 border-none border-t-[3px] bg-transparent text-black font-black pb-1' : 'w-10 bg-white'}
+                                                    `}>
+                                                        {h.type === 'dot' && prob.dividend.includes('.') ? '•' : char}
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* 學生直式運算過程空網格列 */}
+                                            {[...Array(prob.numRows)].map((_, rIdx) => {
+                                                const isRemainderRow = (rIdx % 2 === 1);
+                                                return (
+                                                    <React.Fragment key={`pr-row-${rIdx}`}>
+                                                        {prob.headers.map((h, cIdx) => {
+                                                            // 減法橫底線：在商餘數列 (奇數索引) 畫上頂部實線
+                                                            const cellBorder = isRemainderRow ? 'border-t-[3px] border-black' : '';
+                                                            // 減號符號：在乘積列 (偶數索引) 且最左側繪製減號
+                                                            const hasMinus = (!isRemainderRow && cIdx === 0);
+                                                            
+                                                            return (
+                                                                <div key={`pc-${rIdx}-${cIdx}`} className={`h-10 border-blue-200 border-[1px] relative flex justify-center items-center ${cellBorder}
+                                                                    ${h.type === 'dot' ? 'w-2 border-none bg-transparent' : 'w-10 bg-white'}
+                                                                `}>
+                                                                    {hasMinus && <div className="absolute -left-[1.2rem] text-xl font-bold font-sans">-</div>}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ==========================================
+            // 畫面 2: 主選單
+            // ==========================================
+            if (view === 'menu') {
+                return (
+                    <div className="min-h-screen bg-[#FFFDF7] text-gray-800 font-sans p-6 flex flex-col items-center justify-center">
+                        <div className="max-w-xl w-full">
+                            <div className="text-center mb-10">
+                                <h1 className="text-4xl font-extrabold text-orange-800 tracking-wide mb-4">除法直式計算小幫手</h1>
+                                <p className="text-gray-600 text-lg">選擇練習模式，開始一步步學習計算過程吧！</p>
+                            </div>
+
+                            <div className="bg-white rounded-3xl shadow-sm border-[3px] border-orange-100 p-8 flex flex-col">
+                                <div className="flex items-center gap-3 mb-6 text-orange-800 font-bold text-xl">
+                                    <Settings className="w-6 h-6 text-orange-600 animate-spin-slow" />
+                                    被除數與題型設定：
+                                </div>
+                                
+                                <div className="flex flex-col gap-5 mb-8">
+                                    <div className="flex flex-wrap gap-3">
+                                        <label className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer hover:bg-orange-50 transition-all flex-grow justify-center
+                                            ${problemType === 'integer' ? 'border-orange-500 bg-orange-50 font-bold text-orange-800' : 'border-gray-200 text-gray-600'}`}>
+                                            <input type="radio" name="ptype" className="sr-only"
+                                                checked={problemType === 'integer'} onChange={() => setProblemType('integer')} />
+                                            <span className="text-lg">整數 (除到小數)</span>
+                                        </label>
+                                        <label className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer hover:bg-orange-50 transition-all flex-grow justify-center
+                                            ${problemType === 'decimal' ? 'border-orange-500 bg-orange-50 font-bold text-orange-800' : 'border-gray-200 text-gray-600'}`}>
+                                            <input type="radio" name="ptype" className="sr-only"
+                                                checked={problemType === 'decimal'} onChange={() => setProblemType('decimal')} />
+                                            <span className="text-lg">小數 ÷ 整數</span>
+                                        </label>
+                                        <label className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer hover:bg-orange-50 transition-all flex-grow justify-center
+                                            ${problemType === 'mixed' ? 'border-orange-500 bg-orange-50 font-bold text-orange-800' : 'border-gray-200 text-gray-600'}`}>
+                                            <input type="radio" name="ptype" className="sr-only"
+                                                checked={problemType === 'mixed'} onChange={() => setProblemType('mixed')} />
+                                            <span className="text-lg">混合出題</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div className="h-px bg-gray-200 my-1"></div>
+                                    
+                                    <div className="flex items-center justify-between px-2">
+                                        <span className="font-medium text-lg text-gray-700">互動練習題數：</span>
+                                        <select 
+                                            className="bg-orange-50 border-2 border-orange-200 rounded-xl px-4 py-2 text-orange-950 font-bold focus:outline-none focus:border-orange-400 cursor-pointer text-lg"
+                                            value={practiceTotal}
+                                            onChange={(e) => setPracticeTotal(Number(e.target.value))}
+                                        >
+                                            <option value={5}>5 題</option>
+                                            <option value={10}>10 題</option>
+                                            <option value={20}>20 題</option>
+                                        </select>
+                                    </div>
+
+                                    <label className="flex items-center gap-3 px-2 cursor-pointer mt-2">
+                                        <input type="checkbox" className="w-6 h-6 rounded text-orange-600 border-gray-300 focus:ring-orange-500"
+                                            checked={useGrid} onChange={(e) => setUseGrid(e.target.checked)} />
+                                        <span className="font-medium text-lg text-gray-700">開啟輔助提示格 (帶表頭標示)</span>
+                                    </label>
+                                </div>
+
+                                <button 
+                                    onClick={startPractice}
+                                    className="w-full py-4 rounded-2xl font-bold text-2xl flex items-center justify-center gap-2 shadow-md transition-all bg-gradient-to-b from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white active:scale-95 border-2 border-orange-600"
+                                >
+                                    <Play className="fill-current w-6 h-6" />
+                                    開始線上練習
+                                </button>
+                            </div>
+
+                            {/* 紙本學習單輸出區 */}
+                            <div className="mt-8 bg-blue-50 border-[3px] border-blue-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                                <div className="flex items-center gap-3 text-blue-800 font-bold text-xl">
+                                    <BookOpen className="w-6 h-6 text-blue-600" />
+                                    紙本直式練習單輸出
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <select 
+                                        className="bg-white border-2 border-blue-200 rounded-xl px-3 py-2 text-blue-900 font-bold focus:outline-none focus:border-blue-400 cursor-pointer"
+                                        value={printCount}
+                                        onChange={(e) => setPrintCount(Number(e.target.value))}
+                                    >
+                                        <option value={10}>10 題</option>
+                                        <option value={20}>20 題</option>
+                                        <option value={30}>30 題</option>
+                                    </select>
+                                    <button 
+                                        onClick={generateWorksheet}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm active:scale-95 transition-all border-2 border-blue-700"
+                                    >
+                                        <Printer className="w-5 h-5" />
+                                        列印 / 存成 PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ==========================================
+            // 畫面 3: 練習模式
+            // ==========================================
+            if (!currentProblem) return null;
+
+            const step = currentProblem.steps[stepIndex];
+            const isFinished = stepIndex === currentProblem.steps.length - 1;
+
+            // 動態網格佈局：除數 + 表頭 + 商數 + 被除數 + 計算過程
+            return (
+                <div className="min-h-screen bg-[#FFFDF7] text-gray-800 font-sans p-6">
+                    <div className="max-w-3xl mx-auto">
+                        
+                        {/* 上方導覽欄 */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={backToMenu}
+                                    className="flex items-center gap-2 text-orange-700 hover:text-orange-900 font-bold bg-orange-100 hover:bg-orange-200 px-4 py-2 rounded-xl transition-colors"
+                                >
+                                    <ArrowLeft className="w-5 h-5" />
+                                    返回主選單
+                                </button>
+                                <div className="font-bold text-orange-800 bg-orange-100 px-4 py-2 rounded-xl flex items-center shadow-sm">
+                                    進度：第 {practiceCurrent} / {practiceTotal} 題
+                                </div>
+                            </div>
+
+                            <div className="text-2xl font-black text-orange-950 tracking-widest bg-white px-6 py-2 rounded-full border border-gray-200 shadow-sm">
+                                {currentProblem.dividend} ÷ {currentProblem.divisor}
+                            </div>
+                        </div>
+
+                        {/* 直式運算核心網格區 */}
+                        <div className="bg-white rounded-3xl shadow-sm border-[3px] border-orange-100 p-8 flex flex-col items-center justify-center min-h-[480px] mb-8 overflow-hidden">
+                            <div className="flex items-start justify-center gap-2">
+                                {/* 除數 (垂直置中於被除數行) */}
+                                <div className="pt-[8.8rem] pr-2 text-right w-[5rem] font-bold text-[2.8rem] text-orange-950">
+                                    {currentProblem.divisor}
+                                </div>
+
+                                {/* CSS Grid 直式運算面板 */}
+                                <div 
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(${currentProblem.headers.length}, 4rem)`,
+                                        rowGap: '0.25rem',
+                                        alignItems: 'center'
+                                    }}
+                                    className="relative"
+                                >
+                                    {/* 1. 輔助位值表頭 */}
+                                    {useGrid && currentProblem.headers.map((h, i) => (
+                                        <div key={`h-${i}`} className={`flex justify-center items-center font-sans font-bold text-[0.95rem] border-blue-300 border-[2px] h-10 rounded-t-md shadow-sm
+                                            ${h.type === 'dot' ? 'w-4 border-none bg-transparent shadow-none' : 'w-16'}
+                                            ${h.type === 'int' ? 'bg-[#d4edda] text-green-900' : h.type === 'dec' ? 'bg-[#fff3cd] text-yellow-900' : ''}
+                                        `}>
+                                            {h.label}
+                                        </div>
+                                    ))}
+
+                                    {/* 2. 商數行 */}
+                                    {step.q.map((char, i) => {
+                                        const cellKey = `q-${i}`;
+                                        return renderGridCell(char, cellKey, step.h_q?.includes(i), false, i);
+                                    })}
+
+                                    {/* 3. 被除數行 (包含除號橫線與曲線) */}
+                                    {step.d.map((char, i) => {
+                                        const cellKey = `d-${i}`;
+                                        const borderClasses = `border-t-[4px] border-orange-900 ${i === 0 ? 'border-l-[4px] rounded-tl-[1rem]' : ''}`;
+                                        return (
+                                            <div key={`d-wrapper-${i}`} className={`relative flex items-center h-16 ${borderClasses}`}>
+                                                {renderGridCell(char, cellKey, step.h_d?.includes(i), false, i, true)}
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* 4. 計算過程的乘積與餘數列 */}
+                                    {step.rows.map((row, rIdx) => {
+                                        const isRemainderRow = (row.op === '=');
+                                        return (
+                                            <React.Fragment key={`row-${rIdx}`}>
+                                                {row.chars.map((char, i) => {
+                                                    const cellKey = `r-${rIdx}-${i}`;
+                                                    const isHigh = step.h_r && step.h_r[rIdx] && step.h_r[rIdx].includes(i);
+                                                    const hasArrow = row.arrows && row.arrows.includes(i);
+                                                    
+                                                    // 減法底線與減號符號
+                                                    const cellBorder = isRemainderRow ? 'border-t-[4px] border-orange-300' : '';
+                                                    const hasMinus = (!isRemainderRow && i === 0);
+
+                                                    return (
+                                                        <div key={`r-wrapper-${rIdx}-${i}`} className={`relative flex items-center h-16 ${cellBorder}`}>
+                                                            {hasMinus && <div className="absolute -left-[1.5rem] text-4xl text-orange-500 font-bold">-</div>}
+                                                            {renderGridCell(char, cellKey, isHigh, hasArrow, i)}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 下方控制按鈕 */}
+                        <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto">
+                            <button 
+                                onClick={handleNextStep}
+                                disabled={!isStepInputComplete}
+                                className={`py-5 rounded-2xl font-bold text-2xl flex items-center justify-center gap-2 shadow-md transition-all
+                                    ${!isStepInputComplete 
+                                        ? 'bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed' 
+                                        : isFinished 
+                                            ? 'bg-green-500 text-white border-2 border-green-600 shadow-[0_4px_0_rgb(22,163,74)]'
+                                            : 'bg-gradient-to-b from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white active:scale-95 border-2 border-orange-600 shadow-[0_4px_0_rgb(194,65,12)]'}`}
+                            >
+                                {isFinished ? <CheckCircle className="w-8 h-8"/> : (!isStepInputComplete ? <Edit3 className="w-7 h-7" /> : <ChevronRight className="w-8 h-8"/>)}
+                                {isFinished ? '計算完成' : (!isStepInputComplete ? '請填入正確數字' : (stepIndex === 0 ? '開始解題' : '下一步'))}
+                            </button>
+
+                            <button 
+                                onClick={handleNextProblem}
+                                className="bg-white hover:bg-orange-50 text-orange-600 border-2 border-orange-200 py-5 rounded-2xl font-bold text-2xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"
+                            >
+                                {practiceCurrent < practiceTotal ? (
+                                    <>
+                                        <RefreshCw className="w-7 h-7" />
+                                        下一題
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="w-7 h-7" />
+                                        結束練習
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
